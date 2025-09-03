@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
@@ -143,6 +144,10 @@ class SettingController extends Controller
         'bg_tentang_setting'     => $bg,
     ]);
 
+    // Clear cache untuk memastikan perubahan langsung terlihat
+    Cache::forget('site_config');
+    Cache::forget('homepage_data');
+    
     return redirect()->back()->with('Sukses', 'Berhasil Edit Konfigurasi Website');
 }
 

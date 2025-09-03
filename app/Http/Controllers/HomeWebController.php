@@ -13,8 +13,8 @@ class HomeWebController extends Controller
 {
     public function index()
     {
-        // Cache site configuration for 1 hour
-        $konf = Cache::remember('site_config', 3600, function() {
+        // Cache site configuration for 5 minutes (300 seconds)
+        $konf = Cache::remember('site_config', 300, function() {
             return DB::table('setting')->first();
         });
         
@@ -48,7 +48,7 @@ class HomeWebController extends Controller
 
     public function portfolio()
     {
-        $konf = Cache::remember('site_config', 3600, function() {
+        $konf = Cache::remember('site_config', 300, function() {
             return DB::table('setting')->first();
         });
         
@@ -65,7 +65,7 @@ class HomeWebController extends Controller
 
     public function gallery()
     {
-        $konf = Cache::remember('site_config', 3600, function() {
+        $konf = Cache::remember('site_config', 300, function() {
             return DB::table('setting')->first();
         });
         
@@ -74,7 +74,7 @@ class HomeWebController extends Controller
 
     public function portfolioDetail($slug)
     {
-        $konf = Cache::remember('site_config', 3600, function() {
+        $konf = Cache::remember('site_config', 300, function() {
             return DB::table('setting')->first();
         });
         
@@ -91,7 +91,7 @@ class HomeWebController extends Controller
 
     public function articleDetail($slug)
     {
-        $konf = Cache::remember('site_config', 3600, function() {
+        $konf = Cache::remember('site_config', 300, function() {
             return DB::table('setting')->first();
         });
         
@@ -138,7 +138,7 @@ class HomeWebController extends Controller
 
     public function articles(Request $request)
     {
-        $konf = Cache::remember('site_config', 3600, function() {
+        $konf = Cache::remember('site_config', 300, function() {
             return DB::table('setting')->first();
         });
         
