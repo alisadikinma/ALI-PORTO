@@ -95,8 +95,35 @@ class HomeWebController extends Controller
             return DB::table('setting')->first();
         });
         
-        // Get article without cache for view counting
-        $article = DB::table('berita')->where('slug_berita', $slug)->first();
+        // Get article with ALL fields including SEO data
+        $article = DB::table('berita')
+            ->select([
+                'id_berita',
+                'judul_berita',
+                'kategori_berita', 
+                'isi_berita',
+                'gambar_berita',
+                'tanggal_berita',
+                'slug_berita',
+                'created_at',
+                'updated_at',
+                // SEO Fields
+                'meta_title',
+                'meta_description',
+                'tags',
+                'focus_keyword',
+                // Content Enhancement
+                'featured_snippet',
+                'conclusion', 
+                'faq_data',
+                // Metadata
+                'reading_time',
+                'is_featured',
+                'views',
+                'related_ids'
+            ])
+            ->where('slug_berita', $slug)
+            ->first();
         
         if (!$article) {
             abort(404, 'Article not found');
@@ -105,34 +132,89 @@ class HomeWebController extends Controller
         // Convert article to model instance if needed for relationships
         $articleModel = Berita::find($article->id_berita);
         
-        // Increment view count
-        DB::table('berita')
-            ->where('id_berita', $article->id_berita)
-            ->increment('views');
+        // Increment view count (only once per session per article)
+        $sessionKey = 'viewed_article_' . $article->id_berita;
+        if (!session()->has($sessionKey)) {
+            DB::table('berita')
+                ->where('id_berita', $article->id_berita)
+                ->increment('views');
+            session()->put($sessionKey, true);
+        }
         
         // Track visitor geo location (optional)
         $this->trackVisitor($article->id_berita);
         
-        // Get related articles
-        $recent_articles = Cache::remember('recent_articles_' . $article->kategori_berita, 900, function() use ($article) {
-            return DB::table('berita')
-                ->select('judul_berita', 'slug_berita', 'gambar_berita', 'tanggal_berita', 'kategori_berita', 'created_at', 'isi_berita')
-                ->where('kategori_berita', $article->kategori_berita)
-                ->where('id_berita', '!=', $article->id_berita)
-                ->orderBy('tanggal_berita', 'desc')
-                ->limit(3)
-                ->get();
-        });
+        // Calculate reading time if not set
+        if (!$article->reading_time) {
+            $wordCount = str_word_count(strip_tags($article->isi_berita));
+            $article->reading_time = max(1, ceil($wordCount / 200)); // 200 words per minute
+        }
         
-        // If we have specific related IDs, get those too
+        // Parse FAQ data
+        if ($article->faq_data) {
+            try {
+                $article->faq_data = is_string($article->faq_data) ? json_decode($article->faq_data, true) : $article->faq_data;
+            } catch (Exception $e) {
+                $article->faq_data = null;
+            }
+        }
+        
+        // Get related articles
+        $related_articles = collect();
         if ($articleModel && $articleModel->related_ids && count($articleModel->related_ids) > 0) {
             $related_articles = DB::table('berita')
                 ->whereIn('id_berita', $articleModel->related_ids)
-                ->select('judul_berita', 'slug_berita', 'isi_berita')
+                ->select(['judul_berita', 'slug_berita', 'gambar_berita', 'tanggal_berita', 'kategori_berita', 'isi_berita'])
                 ->get();
-            $article->related_articles = $related_articles;
         }
-
+        
+        // If no manual related articles, get similar ones
+        if ($related_articles->count() < 3) {
+            $autoRelated = DB::table('berita')
+                ->where('id_berita', '!=', $article->id_berita)
+                ->where(function($query) use ($article) {
+                    if (!empty($article->kategori_berita)) {
+                        $query->where('kategori_berita', $article->kategori_berita);
+                    }
+                    if (!empty($article->tags)) {
+                        $tags = explode(',', $article->tags);
+                        foreach ($tags as $tag) {
+                            $query->orWhere('tags', 'LIKE', '%' . trim($tag) . '%');
+                        }
+                    }
+                })
+                ->select(['judul_berita', 'slug_berita', 'gambar_berita', 'tanggal_berita', 'kategori_berita', 'isi_berita'])
+                ->orderBy('tanggal_berita', 'desc')
+                ->limit(3 - $related_articles->count())
+                ->get();
+                
+            $related_articles = $related_articles->merge($autoRelated);
+        }
+        
+        $article->related_articles = $related_articles;
+        
+        // Get recent articles from same category
+        $recent_articles = Cache::remember('recent_articles_' . $article->kategori_berita . '_' . $article->id_berita, 900, function() use ($article) {
+            return DB::table('berita')
+                ->select([
+                    'judul_berita', 
+                    'slug_berita', 
+                    'gambar_berita', 
+                    'tanggal_berita', 
+                    'kategori_berita', 
+                    'created_at', 
+                    'isi_berita',
+                    'meta_description',
+                    'reading_time',
+                    'views'
+                ])
+                ->where('kategori_berita', $article->kategori_berita)
+                ->where('id_berita', '!=', $article->id_berita)
+                ->orderBy('tanggal_berita', 'desc')
+                ->limit(4)
+                ->get();
+        });
+        
         return view('article_detail', compact('konf', 'article', 'recent_articles'));
     }
 
@@ -143,23 +225,44 @@ class HomeWebController extends Controller
         });
         
         $query = DB::table('berita')
-            ->select('judul_berita', 'slug_berita', 'gambar_berita', 'isi_berita', 'tanggal_berita', 'kategori_berita', 'meta_description', 'tags', 'reading_time', 'views')
-            ->orderBy('tanggal_berita', 'desc');
+            ->select([
+                'id_berita',
+                'judul_berita', 
+                'slug_berita', 
+                'gambar_berita', 
+                'isi_berita', 
+                'tanggal_berita', 
+                'kategori_berita', 
+                'meta_title',
+                'meta_description', 
+                'tags', 
+                'reading_time', 
+                'views',
+                'is_featured',
+                'featured_snippet',
+                'conclusion',
+                'focus_keyword',
+                'created_at',
+                'updated_at'
+            ]);
         
-        // Filter by category if provided
-        if ($request->has('category') && $request->category) {
-            $query->where('kategori_berita', $request->category);
-        }
-        
-        // Search functionality
+        // Search functionality - search across multiple fields
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('judul_berita', 'LIKE', "%{$search}%")
+                  ->orWhere('meta_title', 'LIKE', "%{$search}%")
+                  ->orWhere('meta_description', 'LIKE', "%{$search}%")
+                  ->orWhere('featured_snippet', 'LIKE', "%{$search}%")
                   ->orWhere('isi_berita', 'LIKE', "%{$search}%")
                   ->orWhere('tags', 'LIKE', "%{$search}%")
-                  ->orWhere('meta_description', 'LIKE', "%{$search}%");
+                  ->orWhere('focus_keyword', 'LIKE', "%{$search}%");
             });
+        }
+        
+        // Filter by category
+        if ($request->has('category') && $request->category) {
+            $query->where('kategori_berita', $request->category);
         }
         
         // Filter by tag
@@ -168,19 +271,88 @@ class HomeWebController extends Controller
             $query->where('tags', 'LIKE', "%{$tag}%");
         }
         
-        $articles = $query->paginate(10);
+        // Filter by featured articles
+        if ($request->has('featured') && $request->featured) {
+            $query->where('is_featured', true);
+        }
         
-        // Get categories for filter
-        $categories = DB::table('berita')
-            ->select('kategori_berita')
-            ->distinct()
-            ->whereNotNull('kategori_berita')
-            ->pluck('kategori_berita');
+        // Sorting options
+        $sort = $request->get('sort', 'latest');
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('tanggal_berita', 'asc');
+                break;
+            case 'popular':
+                $query->orderBy('views', 'desc')
+                      ->orderBy('tanggal_berita', 'desc');
+                break;
+            case 'featured':
+                $query->orderBy('is_featured', 'desc')
+                      ->orderBy('tanggal_berita', 'desc');
+                break;
+            case 'alphabetical':
+                $query->orderBy('judul_berita', 'asc');
+                break;
+            case 'reading_time':
+                $query->orderBy('reading_time', 'asc')
+                      ->orderBy('tanggal_berita', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('tanggal_berita', 'desc');
+                break;
+        }
         
-        // Get popular tags
-        $popular_tags = $this->getPopularTags();
-            
-        return view('articles', compact('konf', 'articles', 'categories', 'popular_tags'));
+        // Add secondary sorting for consistency
+        $query->orderBy('created_at', 'desc');
+        
+        // Paginate results
+        $articles = $query->paginate(12)->withQueryString();
+        
+        // Get categories for filter dropdown
+        $categories = Cache::remember('article_categories', 1800, function() {
+            return DB::table('berita')
+                ->select('kategori_berita')
+                ->distinct()
+                ->whereNotNull('kategori_berita')
+                ->where('kategori_berita', '!=', '')
+                ->orderBy('kategori_berita')
+                ->pluck('kategori_berita');
+        });
+        
+        // Get popular tags with counts
+        $popular_tags = Cache::remember('popular_tags_list', 1800, function() {
+            return $this->getPopularTags(15);
+        });
+        
+        // Get featured articles for sidebar/highlights
+        $featured_articles = Cache::remember('featured_articles', 1800, function() {
+            return DB::table('berita')
+                ->select(['judul_berita', 'slug_berita', 'gambar_berita', 'tanggal_berita', 'kategori_berita'])
+                ->where('is_featured', true)
+                ->orderBy('tanggal_berita', 'desc')
+                ->limit(3)
+                ->get();
+        });
+        
+        // Get article statistics
+        $stats = Cache::remember('article_stats', 3600, function() {
+            return [
+                'total_articles' => DB::table('berita')->count(),
+                'total_views' => DB::table('berita')->sum('views'),
+                'total_categories' => DB::table('berita')->distinct()->whereNotNull('kategori_berita')->count('kategori_berita'),
+                'featured_count' => DB::table('berita')->where('is_featured', true)->count(),
+            ];
+        });
+        
+        return view('articles', compact(
+            'konf', 
+            'articles', 
+            'categories', 
+            'popular_tags', 
+            'featured_articles',
+            'stats'
+        ));
     }
     
     /**
