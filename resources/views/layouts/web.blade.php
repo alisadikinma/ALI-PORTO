@@ -545,42 +545,55 @@ $konf = DB::table('setting')->first();
                 </a>
 
                 {{-- About --}}
+                @if($konf->about_section_active ?? true)
                 <a href="{{ url('/#about') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     About
                 </a>
+                @endif
 
                 {{-- Services --}}
+                @if($konf->services_section_active ?? true)
                 <a href="{{ url('/#services') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Services
                 </a>
+                @endif
 
                 {{-- Portfolio --}}
+                @if($konf->portfolio_section_active ?? true)
                 <a href="{{ url('/#portfolio') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Portfolio
                 </a>
+                @endif
 
                 {{-- Testimonials --}}
+                @if($konf->testimonials_section_active ?? true)
                 <a href="{{ url('/#testimonials') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Testimonials
                 </a>
+                @endif
 
                 {{-- Gallery --}}
+                @if($konf->gallery_section_active ?? true)
                 <a href="{{ url('/#gallery') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Gallery
                 </a>
+                @endif
 
-                {{-- Articles (aktif di halaman detail article/*) --}}
+                {{-- Articles --}}
+                @if($konf->articles_section_active ?? true)
                 <a href="{{ url('/#articles') }}"
                     class="{{ request()->is('article/*') ? 'text-yellow-400 font-semibold' : 'text-gray-400 font-normal' }} text-base hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Articles
                 </a>
+                @endif
 
                 {{-- Contact (tombol khusus) --}}
+                @if($konf->contact_section_active ?? true)
                 <a href="{{ url('/#contact') }}"
                     class="px-4 sm:px-6 py-2 bg-yellow-400 rounded-lg flex items-center gap-3 text-neutral-900 hover:bg-yellow-500 transition-colors w-full sm:w-auto justify-center sm:justify-start">
                     <svg class="w-5 sm:w-6 h-5 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -588,6 +601,7 @@ $konf = DB::table('setting')->first();
                     </svg>
                     <span class="text-sm font-semibold capitalize leading-[40px] sm:leading-[56px]">Send Message</span>
                 </a>
+                @endif
             </nav>
 
         </div>

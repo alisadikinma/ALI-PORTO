@@ -49,6 +49,10 @@ Route::middleware([
     })->name('dashboard.index');
     Route::post('image-upload', [SettingController::class, 'storeImage'])->name('image.upload');
     Route::resource('setting', SettingController::class);
+    
+    // Section Management Routes
+    Route::get('/setting/sections/manage', [SettingController::class, 'sections'])->name('setting.sections');
+    Route::put('/setting/sections/update', [SettingController::class, 'updateSections'])->name('setting.sections.update');
 
     // API endpoint for article search
     Route::get('/api/articles/search', [BeritaController::class, 'searchArticles'])->name('articles.search');
@@ -69,4 +73,14 @@ Route::middleware([
     Route::resource('contacts', ContactController::class);
 
     Route::get('/tentang-sistem', [App\Http\Controllers\SettingController::class, 'about'])->name('setting.about');
+    
+    // Debug route for checking award data
+    Route::get('/debug-awards', function() {
+        $awards = DB::table('award')->get();
+        return response()->json([
+            'count' => $awards->count(),
+            'data' => $awards,
+            'message' => $awards->count() > 0 ? 'Awards found!' : 'No awards in database'
+        ]);
+    });
 });

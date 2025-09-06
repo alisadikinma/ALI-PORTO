@@ -25,7 +25,10 @@ class HomeWebController extends Controller
                 'testimonial' => DB::table('testimonial')->select('judul_testimonial', 'gambar_testimonial', 'deskripsi_testimonial', 'jabatan')->get(),
                 'galeri' => DB::table('galeri')->select('nama_galeri', 'gambar_galeri', 'gambar_galeri1', 'gambar_galeri2', 'gambar_galeri3', 'video_galeri')->orderBy('created_at', 'desc')->limit(12)->get(),
                 'article' => DB::table('berita')->select('judul_berita', 'slug_berita', 'gambar_berita', 'isi_berita', 'tanggal_berita', 'kategori_berita', 'meta_description', 'tags')->orderBy('tanggal_berita', 'desc')->limit(4)->get(),
-                'award' => DB::table('award')->select('nama_award', 'gambar_award', 'keterangan_award')->get(),
+                'award' => DB::table('award')
+                    ->select('nama_award', 'gambar_award', 'keterangan_award')
+                    ->orderBy('created_at', 'desc')
+                    ->get(),
                 'projects' => DB::table('project')->select('nama_project', 'slug_project', 'gambar_project', 'keterangan_project', 'jenis_project')->orderBy('created_at', 'desc')->limit(9)->get(),
             ];
         });
