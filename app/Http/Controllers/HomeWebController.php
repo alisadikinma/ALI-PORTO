@@ -7,12 +7,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Models\User;
 use App\Models\Berita;
+use App\Models\Galeri;
+use App\Models\Award;
 use Carbon\Carbon;
 
 class HomeWebController extends Controller
 {
     public function index()
     {
+        // Clear cache first to ensure we get fresh data
+        Cache::forget('homepage_data');
+        Cache::forget('site_config');
+        
         // Cache site configuration for 5 minutes (300 seconds)
         $konf = Cache::remember('site_config', 300, function() {
             return DB::table('setting')->first();
@@ -21,11 +27,23 @@ class HomeWebController extends Controller
         // Cache homepage data for 30 minutes
         $data = Cache::remember('homepage_data', 1800, function() {
             return [
-                'layanan' => DB::table('layanan')->select('nama_layanan', 'gambar_layanan', 'keterangan_layanan')->get(),
+                'layanan' => DB::table('layanan')
+                    ->select('id_layanan', 'nama_layanan', 'sub_nama_layanan', 'icon_layanan', 'gambar_layanan', 'keterangan_layanan', 'sequence', 'status')
+                    ->where('status', 'Active')
+                    ->orderBy('sequence', 'asc')
+                    ->get(),
                 'testimonial' => DB::table('testimonial')->select('judul_testimonial', 'gambar_testimonial', 'deskripsi_testimonial', 'jabatan')->get(),
-                'galeri' => DB::table('galeri')->select('nama_galeri', 'gambar_galeri', 'gambar_galeri1', 'gambar_galeri2', 'gambar_galeri3', 'video_galeri')->orderBy('created_at', 'desc')->limit(12)->get(),
+                'galeri' => Galeri::with(['activeGalleryItems' => function($query) {
+                        $query->orderBy('sequence', 'asc');
+                    }])
+                    ->where('status', 'Active')
+                    ->orderBy('sequence', 'asc')
+                    ->limit(12)
+                    ->get(),
                 'article' => DB::table('berita')->select('judul_berita', 'slug_berita', 'gambar_berita', 'isi_berita', 'tanggal_berita', 'kategori_berita', 'meta_description', 'tags')->orderBy('tanggal_berita', 'desc')->limit(4)->get(),
-                'award' => DB::table('award')->select('nama_award', 'gambar_award', 'keterangan_award')->get(),
+                'award' => Award::where('status', 'Active')
+                    ->orderBy('sequence', 'asc')
+                    ->get(),
                 'projects' => DB::table('project')->select('nama_project', 'slug_project', 'gambar_project', 'keterangan_project', 'jenis_project')->orderBy('created_at', 'desc')->limit(9)->get(),
             ];
         });
@@ -69,7 +87,16 @@ class HomeWebController extends Controller
             return DB::table('setting')->first();
         });
         
-        return view('gallery', compact('konf'));
+        // Get all active galleries with their active items
+        $galeri = Galeri::with(['items' => function($query) {
+                $query->where('status', 'Active')
+                      ->orderBy('sequence', 'asc');
+            }])
+            ->where('status', 'Active')
+            ->orderBy('sequence', 'asc')
+            ->get();
+        
+        return view('gallery', compact('konf', 'galeri'));
     }
 
     public function portfolioDetail($slug)
@@ -501,5 +528,80 @@ class HomeWebController extends Controller
         return response()
             ->view('sitemap', ['urls' => $urls])
             ->header('Content-Type', 'application/xml');
+    }
+    
+    /**
+     * Get gallery items for modal display
+     */
+    public function getGalleryItems($galleryId)
+    {
+        try {
+            $gallery = Galeri::with(['galleryItems' => function($query) {
+                    $query->where('status', 'Active')
+                          ->orderBy('sequence', 'asc');
+                }])
+                ->where('id_galeri', $galleryId)
+                ->where('status', 'Active')
+                ->first();
+            
+            if (!$gallery) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gallery not found'
+                ], 404);
+            }
+            
+            // Format gallery items for frontend
+            $items = $gallery->galleryItems->map(function($item) {
+                $data = [
+                    'id' => $item->id_gallery_item,
+                    'type' => $item->type,
+                    'sequence' => $item->sequence,
+                    'status' => $item->status
+                ];
+                
+                if ($item->type === 'image') {
+                    $data['file_url'] = asset('file/galeri/' . $item->file_name);
+                    $data['thumbnail_url'] = asset('file/galeri/' . $item->file_name);
+                } elseif ($item->type === 'youtube') {
+                    $data['youtube_url'] = $item->youtube_url;
+                    $data['file_url'] = $item->youtube_url; // Add file_url for consistency
+                    $videoId = $this->extractYouTubeId($item->youtube_url);
+                    $data['thumbnail_url'] = $videoId ? "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg" : null;
+                }
+                
+                return $data;
+            });
+            
+            return response()->json([
+                'success' => true,
+                'gallery' => [
+                    'id' => $gallery->id_galeri,
+                    'nama_galeri' => $gallery->nama_galeri,
+                    'company' => $gallery->company,
+                    'period' => $gallery->period,
+                    'deskripsi_galeri' => $gallery->deskripsi_galeri,
+                    'thumbnail' => $gallery->thumbnail ? asset('file/galeri/' . $gallery->thumbnail) : null
+                ],
+                'items' => $items
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to get gallery items: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load gallery items'
+            ], 500);
+        }
+    }
+    
+    /**
+     * Extract YouTube video ID from URL
+     */
+    private function extractYouTubeId($url)
+    {
+        preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/', $url, $matches);
+        return $matches[1] ?? null;
     }
 }

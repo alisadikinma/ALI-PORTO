@@ -354,3 +354,34 @@
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
+
+/* Custom Width Classes for 30% - 70% Layout */
+.w-3\/10 {
+    width: 30% !important;
+}
+
+.w-7\/10 {
+    width: 70% !important;
+}
+
+/* Large screen and up */
+@media (min-width: 1024px) {
+    .lg\:w-3\/10 {
+        width: 30% !important;
+    }
+    
+    .lg\:w-7\/10 {
+        width: 70% !important;
+    }
+}
+
+/* Extra large screen and up */
+@media (min-width: 1280px) {
+    .xl\:w-3\/10 {
+        width: 30% !important;
+    }
+    
+    .xl\:w-7\/10 {
+        width: 70% !important;
+    }
+}

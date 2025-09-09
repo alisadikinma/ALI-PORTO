@@ -4,8 +4,11 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">{{ $title }}</h3>
+                    <a href="{{ route('setting.sections') }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-toggle-on"></i> Manage Sections
+                    </a>
                 </div>
                 <div class="card-body">
                     @if ($message = Session::get('Sukses'))
@@ -65,8 +68,8 @@
                             <input type="text" class="form-control" name="facebook_setting" placeholder="Masukkan facebook disini" value="{{ $setting->facebook_setting ?? '' }}">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="">Twitter</label>
-                            <input type="text" class="form-control" name="twitter_setting" placeholder="Masukkan twitter disini" value="{{ $setting->twitter_setting ?? '' }}">
+                            <label for="">LinkedIn</label>
+                            <input type="text" class="form-control" name="linkedin_setting" placeholder="Masukkan linkedin disini" value="{{ $setting->linkedin_setting ?? '' }}">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="">No. HP</label>
@@ -117,6 +120,44 @@
                         <div class="col-md-6 mb-3">
                             <label for="" class="form-label">Success Rate</label>
                             <input type="text" step="0.01" name="success_rate" class="form-control" value="{{ $setting->success_rate ?? '' }}" placeholder="Enter success rate">
+                        </div>
+                        
+                        <!-- About Section Fields -->
+                        <div class="col-12">
+                            <h5 class="fw-bold text-primary mt-4 mb-3">About Section Settings</h5>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="" class="form-label">About Section Title</label>
+                            <input type="text" name="about_section_title" class="form-control" value="{{ $setting->about_section_title ?? '' }}" placeholder="Enter about section title">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="" class="form-label">About Section Subtitle</label>
+                            <input type="text" name="about_section_subtitle" class="form-control" value="{{ $setting->about_section_subtitle ?? '' }}" placeholder="Enter about section subtitle">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="" class="form-label">About Section Description</label>
+                            <textarea name="about_section_description" class="form-control" id="editor4" rows="5">{{ $setting->about_section_description ?? '' }}</textarea>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="">About Section Image</label>
+                            <input type="file" class="form-control" name="about_section_image" placeholder="" accept="image/*" id="preview_about_image" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="">Preview About Image</label>
+                            <img src="{{ asset('images/about/' . ($setting->about_section_image ?? '')) }}" alt="" style="width: 200px;" id="about_image_preview">
+                        </div>
+                        
+                        <!-- Award Section Fields -->
+                        <div class="col-12">
+                            <h5 class="fw-bold text-primary mt-4 mb-3">Award Section Settings</h5>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="" class="form-label">Award Section Title</label>
+                            <input type="text" name="award_section_title" class="form-control" value="{{ $setting->award_section_title ?? '' }}" placeholder="Enter award section title">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="" class="form-label">Award Section Subtitle</label>
+                            <input type="text" name="award_section_subtitle" class="form-control" value="{{ $setting->award_section_subtitle ?? '' }}" placeholder="Enter award section subtitle">
                         </div>
                         <!-- Existing Fields (e.g., Logo, Favicon, Maps) -->
                         <div class="col-md-12 mb-3">
@@ -169,6 +210,11 @@
         });
     ClassicEditor
         .create(document.querySelector('#editor3'))
+        .catch(error => {
+            console.error(error);
+        });
+    ClassicEditor
+        .create(document.querySelector('#editor4'))
         .catch(error => {
             console.error(error);
         });

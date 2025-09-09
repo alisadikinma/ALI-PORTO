@@ -28,7 +28,7 @@ return [
     |
     */
 
-    'compiled' => env(
+    'compiled' => env('APP_ENV') === 'local' ? storage_path('framework/views-dev') : env(
         'VIEW_COMPILED_PATH',
         realpath(storage_path('framework/views'))
     ),

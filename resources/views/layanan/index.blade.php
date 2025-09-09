@@ -18,9 +18,13 @@
                     <thead>
                         <tr>
                             <th scope="col">No</th>
+                            <th scope="col">Icon</th>
                             <th scope="col">Layanan</th>
+                            <th scope="col">Sub Layanan</th>
                             <th scope="col">Keterangan</th>
                             <th scope="col">Gambar</th>
+                            <th scope="col">Sequence</th>
+                            <th scope="col">Status</th>
                             <th scope="col">Aksi</th>
                         </tr>
                     </thead>
@@ -28,9 +32,25 @@
                         @foreach ($layanan as $row)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
+                            <td>
+                                @if($row->icon_layanan)
+                                    <img src="{{ asset('file/layanan/icons/'.$row->icon_layanan) }}" alt="Icon" style="width: 32px; height: 32px;">
+                                @else
+                                    <span class="text-muted">No Icon</span>
+                                @endif
+                            </td>
                             <td>{{ $row->nama_layanan }}</td>
-                            <td>{!! Str::limit($row->keterangan_layanan, 200, '...') !!}</td>
+                            <td>{{ $row->sub_nama_layanan ?? '-' }}</td>
+                            <td>{!! Str::limit($row->keterangan_layanan, 150, '...') !!}</td>
                             <td><img src="{{ asset('file/layanan/'.$row->gambar_layanan) }}" alt="{{ $row->nama_layanan }}" style="width: 50px; height: 50px;"></td>
+                            <td><span class="badge badge-info" style="color: black;">{{ $row->sequence ?? 0 }}</span></td>
+                            <td>
+                                @if(($row->status ?? 'Active') == 'Active')
+                                    <span class="badge badge-success" style="color: black;">{{ $row->status }}</span>
+                                @else
+                                    <span class="badge badge-secondary" style="color: black;">{{ $row->status }}</span>
+                                @endif
+                            </td>
                             <td>
                                 <a href="{{ route('layanan.edit', $row->id_layanan) }}" class="btn btn-primary btn-xs" style="display: inline-block"><i class="fas fa-edit">Edit</i></a>
                                 <form action="{{ route('layanan.destroy', $row->id_layanan) }}" method="POST" style="display: inline-block">

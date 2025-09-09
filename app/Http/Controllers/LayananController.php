@@ -15,7 +15,11 @@ class LayananController extends Controller
     public function index()
     {
         $title = 'Data Layanan';
-        $layanan = DB::table('layanan')->orderByDesc('id_layanan')->get();
+        // Use Eloquent model instead of DB table to get all fields including sub_nama_layanan
+        $layanan = Layanan::orderBy('sequence', 'asc')
+            ->orderByDesc('id_layanan')
+            ->get();
+        
         return view('layanan.index', compact('layanan', 'title'));
     }
 
@@ -45,11 +49,23 @@ class LayananController extends Controller
         $namagambarlayanan = 'layanan'.date('Ymdhis').'.'.$request->file('gambar_layanan')->getClientOriginalExtension();
         $gambar_layanan->move('file/layanan/',$namagambarlayanan);
 
+        // Handle icon upload
+        $namaicon = null;
+        if ($request->hasFile('icon_layanan')) {
+            $icon_layanan = $request->file('icon_layanan');
+            $namaicon = 'icon_layanan'.date('Ymdhis').'.'.$icon_layanan->getClientOriginalExtension();
+            $icon_layanan->move('file/layanan/icons/',$namaicon);
+        }
+
         $data = new layanan();
         $data->nama_layanan = $request->nama_layanan;
+        $data->sub_nama_layanan = $request->sub_nama_layanan;
+        $data->icon_layanan = $namaicon;
         $data->gambar_layanan = $namagambarlayanan;
         $data->keterangan_layanan = $request->keterangan_layanan;
-        $data->slug_layanan = Str::slug($request->nama_layanan); 
+        $data->slug_layanan = Str::slug($request->nama_layanan);
+        $data->sequence = $request->sequence ?? 0;
+        $data->status = $request->status ?? 'Active';
         $data->save();
         return redirect()->route('layanan.index')->with('Sukses', 'Berhasil Tambah Layanan');
     }
@@ -79,11 +95,28 @@ class LayananController extends Controller
     {
         $layanan = Layanan::find($id);
         $namagambarlayanan = $layanan->gambar_layanan;
+        $namaicon = $layanan->icon_layanan;
+        
+        // Handle icon upload
+        if ($request->hasFile('icon_layanan')) {
+            // Delete old icon if exists
+            if ($namaicon && file_exists(public_path('file/layanan/icons/' . $namaicon))) {
+                @unlink(public_path('file/layanan/icons/' . $namaicon));
+            }
+            $icon_layanan = $request->file('icon_layanan');
+            $namaicon = 'icon_layanan'.date('Ymdhis').'.'.$icon_layanan->getClientOriginalExtension();
+            $icon_layanan->move('file/layanan/icons/',$namaicon);
+        }
+        
         $update = [
             'nama_layanan' => $request->nama_layanan,
+            'sub_nama_layanan' => $request->sub_nama_layanan,
+            'icon_layanan' => $namaicon,
             'gambar_layanan' => $namagambarlayanan,
             'keterangan_layanan' => $request->keterangan_layanan,
             'slug_layanan' => Str::slug($request->nama_layanan),
+            'sequence' => $request->sequence ?? 0,
+            'status' => $request->status ?? 'Active',
         ];
         if ($request->gambar_layanan != ""){
             $request->gambar_layanan->move(public_path('file/layanan/'), $namagambarlayanan);

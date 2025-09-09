@@ -15,5 +15,23 @@ class Award extends Model
         'gambar_award',
         'keterangan_award',
         'slug_award',
+        'sequence',
+        'status',
     ];
+
+    protected $casts = [
+        'sequence' => 'integer',
+    ];
+
+    // Scope for active records
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'Active');
+    }
+
+    // Scope for ordered by sequence
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('sequence', 'asc');
+    }
 }

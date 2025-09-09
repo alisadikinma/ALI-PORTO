@@ -21,6 +21,8 @@
                             <th scope="col">Award</th>
                             <th scope="col">Keterangan</th>
                             <th scope="col">Gambar</th>
+                            <th scope="col">Sequence</th>
+                            <th scope="col">Status</th>
                             <th scope="col">Aksi</th>
                         </tr>
                     </thead>
@@ -31,6 +33,14 @@
                             <td>{{ $row->nama_award }}</td>
                             <td>{!! Str::limit($row->keterangan_award, 200, '...') !!}</td>
                             <td><img src="{{ asset('file/award/'.$row->gambar_award) }}" alt="{{ $row->nama_award }}" style="width: 50px; height: 50px;"></td>
+                            <td><span class="badge badge-info" style="color: black;">{{ $row->sequence ?? 0 }}</span></td>
+                            <td>
+                                @if(($row->status ?? 'Active') == 'Active')
+                                    <span class="badge badge-success" style="color: black;">{{ $row->status }}</span>
+                                @else
+                                    <span class="badge badge-secondary" style="color: black;">{{ $row->status }}</span>
+                                @endif
+                            </td>
                             <td>
                                 <a href="{{ route('award.edit', $row->id_award) }}" class="btn btn-primary btn-xs" style="display: inline-block"><i class="fas fa-edit">Edit</i></a>
                                 <form action="{{ route('award.destroy', $row->id_award) }}" method="POST" style="display: inline-block">

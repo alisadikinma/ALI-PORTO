@@ -88,6 +88,7 @@
 
             </div>
             <div class="card-footer">
+                <a href="{{ route('project.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
                 <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save</button>
                 </form>
             </div>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Award;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AwardController extends Controller
@@ -15,7 +17,13 @@ class AwardController extends Controller
     public function index()
     {
         $title = 'Data Award & Recognition';
-        $award = DB::table('award')->orderByDesc('id_award')->get();
+        
+        // Use DB table with get() to return proper objects
+        $award = DB::table('award')
+            ->orderBy('sequence', 'asc')
+            ->orderByDesc('id_award')
+            ->get();
+        
         return view('award.index', compact('award', 'title'));
     }
 
@@ -49,7 +57,9 @@ class AwardController extends Controller
         $data->nama_award = $request->nama_award;
         $data->gambar_award = $namagambaraward;
         $data->keterangan_award = $request->keterangan_award;
-        $data->slug_award = Str::slug($request->nama_award); 
+        $data->slug_award = Str::slug($request->nama_award);
+        $data->sequence = $request->sequence ?? 0;
+        $data->status = $request->status ?? 'Active';
         $data->save();
         return redirect()->route('award.index')->with('Sukses', 'Berhasil Tambah Award');
     }
@@ -84,6 +94,8 @@ class AwardController extends Controller
             'gambar_award' => $namagambaraward,
             'keterangan_award' => $request->keterangan_award,
             'slug_award' => Str::slug($request->nama_award),
+            'sequence' => $request->sequence ?? 0,
+            'status' => $request->status ?? 'Active',
         ];
         if ($request->gambar_award != ""){
             $request->gambar_award->move(public_path('file/award/'), $namagambaraward);

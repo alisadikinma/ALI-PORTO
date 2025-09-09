@@ -36,9 +36,29 @@
                         <div class="form-group mb-3">
                             <label for="">Preview Foto</label>
                             <img src="{{ asset('file/award/'.$award->gambar_award) }}" alt="" style="width: 200px;" id="gambar_nodin">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label for="sequence">Sequence <abbr title="Urutan tampil" style="color: black">*</abbr></label>
+                                    <input type="number" class="form-control" placeholder="Urutan tampil (contoh: 1, 2, 3...)" name="sequence" value="{{ $award->sequence ?? 0 }}" min="0">
+                                    <small class="text-muted">Urutan tampil di website (angka kecil tampil duluan)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label for="status">Status <abbr title="" style="color: black">*</abbr></label>
+                                    <select name="status" class="form-control">
+                                        <option value="Active" {{ ($award->status ?? 'Active') == 'Active' ? 'selected' : '' }}>Active</option>
+                                        <option value="Inactive" {{ ($award->status ?? 'Active') == 'Inactive' ? 'selected' : '' }}>Inactive</option>
+                                    </select>
+                                    <small class="text-muted">Hanya status Active yang tampil di website</small>
+                                </div>
+                            </div>
                         </div>      
                 </div>
                 <div class="card-footer">
+                    <a href="{{ route('award.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
                     <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save</button>
                 </form>
                 </div>

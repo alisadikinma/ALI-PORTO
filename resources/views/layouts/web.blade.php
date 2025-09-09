@@ -13,6 +13,7 @@ $konf = DB::table('setting')->first();
     
     {{-- Dynamic SEO Meta Tags --}}
     <title>@yield('title', $konf->instansi_setting . ' - AI Generalist & Technopreneur')</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('logo/' . ($konf->logo_setting ?? 'default.ico')) }}">
     <meta name="description" content="@yield('meta_description', $konf->tentang_setting)">
     <meta name="keywords" content="@yield('meta_keywords', $konf->keyword_setting)">
     <meta name="author" content="{{ $konf->pimpinan_setting }}">
@@ -520,7 +521,10 @@ $konf = DB::table('setting')->first();
         class="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 py-4 fixed top-0 left-0 z-50 bg-gradient-footer backdrop-blur-xl">
         <div class="flex justify-between items-center">
             <div class="text-neutral-50 text-xl sm:text-2xl font-bold leading-[48px] sm:leading-[72px] tracking-wide">
-                <a href="{{ url('/') }}">Ali Sadikin</a>
+                <a href="{{ url('/') }}" class="flex items-center gap-4 hover:text-yellow-400 transition-colors">
+                    <img src="{{ asset('logo/' . $konf->logo_setting) }}" alt="ASM Logo" class="w-12 sm:w-16 h-12 sm:h-16 object-contain">
+                    {{ $konf->pimpinan_setting }}
+                </a>
             </div>
             <button class="sm:hidden p-2" onclick="toggleMenu()" aria-label="Toggle navigation menu"
                 aria-expanded="false" id="menu-toggle">
@@ -545,42 +549,55 @@ $konf = DB::table('setting')->first();
                 </a>
 
                 {{-- About --}}
+                @if($konf->about_section_active ?? true)
                 <a href="{{ url('/#about') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     About
                 </a>
+                @endif
 
                 {{-- Services --}}
+                @if($konf->services_section_active ?? true)
                 <a href="{{ url('/#services') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Services
                 </a>
+                @endif
 
                 {{-- Portfolio --}}
+                @if($konf->portfolio_section_active ?? true)
                 <a href="{{ url('/#portfolio') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Portfolio
                 </a>
+                @endif
 
                 {{-- Testimonials --}}
+                @if($konf->testimonials_section_active ?? true)
                 <a href="{{ url('/#testimonials') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Testimonials
                 </a>
+                @endif
 
                 {{-- Gallery --}}
+                @if($konf->gallery_section_active ?? true)
                 <a href="{{ url('/#gallery') }}"
                     class="text-gray-400 text-base font-normal hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Gallery
                 </a>
+                @endif
 
-                {{-- Articles (aktif di halaman detail article/*) --}}
+                {{-- Articles --}}
+                @if($konf->articles_section_active ?? true)
                 <a href="{{ url('/#articles') }}"
                     class="{{ request()->is('article/*') ? 'text-yellow-400 font-semibold' : 'text-gray-400 font-normal' }} text-base hover:text-yellow-400 transition-colors py-2 w-full sm:w-auto">
                     Articles
                 </a>
+                @endif
 
                 {{-- Contact (tombol khusus) --}}
+                @if($konf->contact_section_active ?? true)
                 <a href="{{ url('/#contact') }}"
                     class="px-4 sm:px-6 py-2 bg-yellow-400 rounded-lg flex items-center gap-3 text-neutral-900 hover:bg-yellow-500 transition-colors w-full sm:w-auto justify-center sm:justify-start">
                     <svg class="w-5 sm:w-6 h-5 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -588,6 +605,7 @@ $konf = DB::table('setting')->first();
                     </svg>
                     <span class="text-sm font-semibold capitalize leading-[40px] sm:leading-[56px]">Send Message</span>
                 </a>
+                @endif
             </nav>
 
         </div>
