@@ -28,7 +28,7 @@ class HomeWebController extends Controller
         $data = Cache::remember('homepage_data', 1800, function() {
             return [
                 'layanan' => DB::table('layanan')
-                    ->select('id_layanan', 'nama_layanan', 'sub_nama_layanan', 'icon_layanan', 'gambar_layanan', 'keterangan_layanan', 'sequence', 'status')
+                    ->select('nama_layanan', 'gambar_layanan', 'keterangan_layanan', 'sequence', 'status')
                     ->where('status', 'Active')
                     ->orderBy('sequence', 'asc')
                     ->get(),

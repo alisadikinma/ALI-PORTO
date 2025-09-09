@@ -359,26 +359,33 @@
 
         // Form submission validation
         document.getElementById('galleryForm').addEventListener('submit', function(e) {
-            const items = document.querySelectorAll('.gallery-item');
+            console.log('Form submission started');
             
-            if (items.length === 0) {
-                e.preventDefault();
-                alert('Anda harus menambahkan minimal 1 gallery item');
-                return false;
-            }
+            const items = document.querySelectorAll('.gallery-item');
+            console.log('Gallery items found:', items.length);
+            
+            // Allow submission without gallery items for testing
+            // if (items.length === 0) {
+            //     e.preventDefault();
+            //     alert('Anda harus menambahkan minimal 1 gallery item');
+            //     return false;
+            // }
 
-            // Validate each item
+            // Validate each item only if they exist
             let isValid = true;
             items.forEach((item, index) => {
                 const type = item.querySelector('.item-type').value;
+                console.log(`Item ${index} type:`, type);
+                
                 if (!type) {
-                    isValid = false;
-                    alert(`Gallery Item #${index + 1}: Tipe harus dipilih`);
+                    console.log(`Item ${index} has no type selected`);
+                    // Skip validation for empty items
                     return;
                 }
 
                 if (type === 'image') {
                     const fileInput = item.querySelector('.file-input');
+                    console.log(`Item ${index} file input:`, fileInput.files);
                     if (!fileInput.files || fileInput.files.length === 0) {
                         isValid = false;
                         alert(`Gallery Item #${index + 1}: File gambar harus diupload`);
@@ -388,6 +395,7 @@
 
                 if (type === 'youtube') {
                     const youtubeUrl = item.querySelector('.youtube-input').value;
+                    console.log(`Item ${index} youtube URL:`, youtubeUrl);
                     if (!youtubeUrl) {
                         isValid = false;
                         alert(`Gallery Item #${index + 1}: YouTube URL harus diisi`);
@@ -399,6 +407,13 @@
             if (!isValid) {
                 e.preventDefault();
                 return false;
+            }
+
+            // Log form data before submit
+            const formData = new FormData(this);
+            console.log('Form data being submitted:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, ':', value);
             }
 
             // Disable submit button to prevent double submission

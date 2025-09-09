@@ -1,32 +1,33 @@
-@extends('layouts.index')
-@section('content')
+<?php $__env->startSection('content'); ?>
     <div class="row">
         <div class="col">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title">{{ $title }}</h3>
-                    <a href="{{ route('galeri.create') }}" class="btn btn-primary">
+                    <h3 class="card-title"><?php echo e($title); ?></h3>
+                    <a href="<?php echo e(route('galeri.create')); ?>" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Tambah Galeri
                     </a>
                 </div>
                 <div class="card-body">
-                    @if (session('Sukses'))
+                    <?php if(session('Sukses')): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('Sukses') }}
-                            <button type="button" class="close" data-dismiss="alert">
-                                <span>&times;</span>
-                            </button>
-                        </div>
-                    @endif
+                            <?php echo e(session('Sukses')); ?>
 
-                    @if (session('Error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {{ session('Error') }}
                             <button type="button" class="close" data-dismiss="alert">
                                 <span>&times;</span>
                             </button>
                         </div>
-                    @endif
+                    <?php endif; ?>
+
+                    <?php if(session('Error')): ?>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <?php echo e(session('Error')); ?>
+
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                    <?php endif; ?>
 
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
@@ -43,65 +44,67 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($galeri as $row)
+                                <?php $__empty_1 = true; $__currentLoopData = $galeri; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td><?php echo e($loop->iteration); ?></td>
                                         <td>
-                                            @if($row->thumbnail)
-                                                <img src="{{ asset('file/galeri/' . $row->thumbnail) }}" 
-                                                     alt="{{ $row->nama_galeri }}" 
+                                            <?php if($row->thumbnail): ?>
+                                                <img src="<?php echo e(asset('file/galeri/' . $row->thumbnail)); ?>" 
+                                                     alt="<?php echo e($row->nama_galeri); ?>" 
                                                      class="img-fluid rounded" 
                                                      style="max-height: 80px; max-width: 120px; object-fit: cover;">
-                                            @else
+                                            <?php else: ?>
                                                 <div class="bg-light d-flex align-items-center justify-content-center rounded" 
                                                      style="height: 80px; width: 120px;">
                                                     <i class="fas fa-image text-muted"></i>
                                                 </div>
-                                            @endif
+                                            <?php endif; ?>
                                         </td>
                                         <td>
-                                            <strong>{{ $row->nama_galeri }}</strong>
-                                            @if($row->company)
-                                                <br><small class="text-info">{{ $row->company }}</small>
-                                            @endif
-                                            @if($row->period)
-                                                <br><small class="text-warning">{{ $row->period }}</small>
-                                            @endif
-                                            @if($row->deskripsi_galeri)
-                                                <br><small class="text-muted">{!! Str::limit(strip_tags($row->deskripsi_galeri), 50) !!}</small>
-                                            @endif
+                                            <strong><?php echo e($row->nama_galeri); ?></strong>
+                                            <?php if($row->company): ?>
+                                                <br><small class="text-info"><?php echo e($row->company); ?></small>
+                                            <?php endif; ?>
+                                            <?php if($row->period): ?>
+                                                <br><small class="text-warning"><?php echo e($row->period); ?></small>
+                                            <?php endif; ?>
+                                            <?php if($row->deskripsi_galeri): ?>
+                                                <br><small class="text-muted"><?php echo Str::limit(strip_tags($row->deskripsi_galeri), 50); ?></small>
+                                            <?php endif; ?>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-wrap gap-1">
-                                                @foreach($row->galleryItems as $item)
-                                                    <span class="badge badge-{{ $item->type === 'image' ? 'primary' : 'warning' }}">
-                                                        {{ ucfirst($item->type) }}
+                                                <?php $__currentLoopData = $row->galleryItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                    <span class="badge badge-<?php echo e($item->type === 'image' ? 'primary' : 'warning'); ?>">
+                                                        <?php echo e(ucfirst($item->type)); ?>
+
                                                     </span>
-                                                @endforeach
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                             </div>
-                                            <small class="text-muted">{{ $row->galleryItems->count() }} items</small>
+                                            <small class="text-muted"><?php echo e($row->galleryItems->count()); ?> items</small>
                                         </td>
                                         <td>
-                                            <span class="badge badge-{{ $row->status === 'Active' ? 'success' : 'secondary' }} status-badge">
-                                                {{ $row->status }}
+                                            <span class="badge badge-<?php echo e($row->status === 'Active' ? 'success' : 'secondary'); ?> status-badge">
+                                                <?php echo e($row->status); ?>
+
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="badge badge-info sequence-badge">{{ $row->sequence }}</span>
+                                            <span class="badge badge-info sequence-badge"><?php echo e($row->sequence); ?></span>
                                         </td>
                                         <td>
-                                            {{ $row->created_at->format('d/m/Y') }}<br>
-                                            <small class="text-muted">{{ $row->created_at->format('H:i') }}</small>
+                                            <?php echo e($row->created_at->format('d/m/Y')); ?><br>
+                                            <small class="text-muted"><?php echo e($row->created_at->format('H:i')); ?></small>
                                         </td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                            <a href="{{ route('galeri.edit', $row->id_galeri) }}" 
+                                            <a href="<?php echo e(route('galeri.edit', $row->id_galeri)); ?>" 
                                             class="btn btn-warning btn-sm" title="Edit">
                                             <i class="fas fa-edit"></i>
                                             </a>
-                                            <form action="{{ route('galeri.destroy', $row->id_galeri) }}" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus galeri {{ addslashes($row->nama_galeri) }}?')">
-                                            @csrf
-                                            @method('DELETE')
+                                            <form action="<?php echo e(route('galeri.destroy', $row->id_galeri)); ?>" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus galeri <?php echo e(addslashes($row->nama_galeri)); ?>?')">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('DELETE'); ?>
                                             <button type="submit" class="btn btn-danger btn-sm" title="Hapus">
                                                 <i class="fas fa-trash"></i>
                                                 </button>
@@ -109,7 +112,7 @@
                                             </div>
                                         </td>
                                     </tr>
-                                @empty
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                     <tr>
                                         <td colspan="8" class="text-center">
                                             <div class="py-4">
@@ -119,7 +122,7 @@
                                             </div>
                                         </td>
                                     </tr>
-                                @endforelse
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -128,7 +131,7 @@
         </div>
     </div>
 
-    {{-- Gallery Items Modal --}}
+    
     <div class="modal fade" id="galleryItemsModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -225,4 +228,6 @@
             }
         }
     </style>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.index', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\ALI-PORTO\resources\views/galeri/index.blade.php ENDPATH**/ ?>

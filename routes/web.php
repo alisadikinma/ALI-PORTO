@@ -36,12 +36,28 @@ Route::get('/api/gallery/{gallery}/items', [HomeWebController::class, 'getGaller
 
 // Additional gallery API routes for better compatibility
 Route::get('/gallery/{gallery}/items', [HomeWebController::class, 'getGalleryItems'])->name('gallery.items');
+Route::get('/galeri/{galeri}/items', [GaleriController::class, 'getGalleryItems'])->name('galeri.items');
 
 // Gallery Item Detail (AJAX, JSON)
 Route::get('/gallery-item/{id}', [GaleriController::class, 'showItem'])->name('gallery.item.show');
 
 // Optional: Gallery page with items
 Route::get('/galeri/{id}', [GaleriController::class, 'show'])->name('galeri.show');
+
+// Test routes (outside authentication for debugging)
+Route::get('/galeri-test-simple', function() {
+    return view('galeri.test-simple');
+})->name('galeri.test.simple');
+
+Route::get('/galeri-test', function() {
+    $awards = \App\Models\Award::orderBy('nama_award', 'asc')->get();
+    return view('galeri.test-form', compact('awards'));
+})->name('galeri.test');
+
+// Force redirect test
+Route::get('/test-login-redirect', function() {
+    return redirect()->route('login')->with('message', 'Redirected from test route');
+})->name('test.login.redirect');
 
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
@@ -64,12 +80,21 @@ Route::middleware([
 
     // API endpoint for article search
     Route::get('/api/articles/search', [BeritaController::class, 'searchArticles'])->name('articles.search');
+    
+    // Session check endpoint
+    Route::get('/api/auth/check', function() {
+        return response()->json([
+            'authenticated' => true,
+            'user' => Auth::user()->name ?? 'Unknown'
+        ]);
+    })->name('auth.check');
 
     // Resource Routes
     Route::resource('dashboard', dashboardController::class);
     Route::resource('berita', BeritaController::class);
     Route::resource('layanan', LayananController::class);
     Route::resource('galeri', GaleriController::class);
+    
     Route::resource('project', ProjectController::class);
     Route::resource('testimonial', TestimonialController::class);
     Route::resource('award', AwardController::class);

@@ -93,6 +93,16 @@ class Galeri extends Model
     }
 
     /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'id_galeri';
+    }
+
+    /**
      * Get the thumbnail URL.
      *
      * @return string
@@ -100,7 +110,7 @@ class Galeri extends Model
     public function getThumbnailUrlAttribute()
     {
         if ($this->thumbnail) {
-            return asset('storage/' . $this->thumbnail);
+            return asset('file/galeri/' . $this->thumbnail);
         }
         return asset('images/placeholder.jpg');
     }

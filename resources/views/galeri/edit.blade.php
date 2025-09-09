@@ -73,7 +73,10 @@
                                     <select name="id_award" class="form-control">
                                         <option value="">Tidak terkait dengan award tertentu</option>
                                         @foreach($awards as $award)
-                                            <option value="{{ $award->id_award }}" {{ old('id_award', $galeri->galleryItems->first()->id_award ?? '') == $award->id_award ? 'selected' : '' }}>
+                                            @php
+                                                $currentAwardId = old('id_award', $galeri->galleryItems->where('id_award', '!=', null)->first()->id_award ?? '');
+                                            @endphp
+                                            <option value="{{ $award->id_award }}" {{ $currentAwardId == $award->id_award ? 'selected' : '' }}>
                                                 {{ $award->nama_award }}
                                             </option>
                                         @endforeach
@@ -438,17 +441,18 @@
             }
         });
 
-        // Form submission validation
+        // Form submission validation and preparation
         document.getElementById('galleryForm').addEventListener('submit', function(e) {
             const items = document.querySelectorAll('.gallery-item');
             
-            if (items.length === 0) {
-                e.preventDefault();
-                alert('Anda harus menambahkan minimal 1 gallery item');
-                return false;
-            }
+            // Don't require items anymore - allow empty gallery
+            // if (items.length === 0) {
+            //     e.preventDefault();
+            //     alert('Anda harus menambahkan minimal 1 gallery item');
+            //     return false;
+            // }
 
-            // Validate each item
+            // Validate each item if they exist
             let isValid = true;
             items.forEach((item, index) => {
                 const type = item.querySelector('.item-type').value;
@@ -482,6 +486,16 @@
                 e.preventDefault();
                 return false;
             }
+
+            // Update array indices before submit
+            items.forEach((item, index) => {
+                const inputs = item.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    if (input.name && input.name.includes('gallery_items[')) {
+                        input.name = input.name.replace(/gallery_items\[\d+\]/, `gallery_items[${index}]`);
+                    }
+                });
+            });
 
             // Disable submit button to prevent double submission
             document.getElementById('submitBtn').disabled = true;

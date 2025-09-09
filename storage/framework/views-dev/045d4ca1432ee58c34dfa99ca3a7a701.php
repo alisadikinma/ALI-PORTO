@@ -528,7 +528,7 @@ document.addEventListener('keydown', function(e) {
                  data-image="<?php echo e(asset('file/layanan/' . $row->gambar_layanan)); ?>"
                  data-description="<?php echo htmlspecialchars($row->keterangan_layanan ?? '', ENT_QUOTES); ?>">
                 <div class="service-icon">
-                    <?php if($row->icon_layanan): ?>
+                    <?php if(isset($row->icon_layanan) && $row->icon_layanan): ?>
                         <img src="<?php echo e(asset('file/layanan/icons/' . $row->icon_layanan)); ?>" alt="<?php echo e($row->nama_layanan); ?> icon" style="width: 28px; height: 28px; object-fit: contain;">
                     <?php else: ?>
                         <?php if(str_contains(strtolower($row->nama_layanan), 'gpt') || str_contains(strtolower($row->nama_layanan), 'custom')): ?>
@@ -562,7 +562,7 @@ document.addEventListener('keydown', function(e) {
                 </div>
                 <div class="service-content">
                     <h3 class="service-title"><?php echo e($row->nama_layanan); ?></h3>
-                    <?php if($row->sub_nama_layanan): ?>
+                    <?php if(isset($row->sub_nama_layanan) && $row->sub_nama_layanan): ?>
                     <p class="service-subtitle-main"><?php echo e($row->sub_nama_layanan); ?></p>
                     <?php endif; ?>
                 </div>
@@ -763,6 +763,7 @@ document.addEventListener('keydown', function(e) {
     min-height: 450px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     height: 100%;
     max-width: 100%;
     overflow: hidden;

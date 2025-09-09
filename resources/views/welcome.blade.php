@@ -514,7 +514,7 @@ document.addEventListener('keydown', function(e) {
                  data-image="{{ asset('file/layanan/' . $row->gambar_layanan) }}"
                  data-description="{!! htmlspecialchars($row->keterangan_layanan ?? '', ENT_QUOTES) !!}">
                 <div class="service-icon">
-                    @if($row->icon_layanan)
+                    @if(isset($row->icon_layanan) && $row->icon_layanan)
                         <img src="{{ asset('file/layanan/icons/' . $row->icon_layanan) }}" alt="{{ $row->nama_layanan }} icon" style="width: 28px; height: 28px; object-fit: contain;">
                     @else
                         @if(str_contains(strtolower($row->nama_layanan), 'gpt') || str_contains(strtolower($row->nama_layanan), 'custom'))
@@ -548,7 +548,7 @@ document.addEventListener('keydown', function(e) {
                 </div>
                 <div class="service-content">
                     <h3 class="service-title">{{ $row->nama_layanan }}</h3>
-                    @if($row->sub_nama_layanan)
+                    @if(isset($row->sub_nama_layanan) && $row->sub_nama_layanan)
                     <p class="service-subtitle-main">{{ $row->sub_nama_layanan }}</p>
                     @endif
                 </div>
